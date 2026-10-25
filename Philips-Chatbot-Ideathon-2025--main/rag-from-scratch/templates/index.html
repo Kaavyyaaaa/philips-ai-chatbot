@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Philips FAQ Chatbot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --philips-dark-blue: #00355F;
+            --philips-blue: #0072CE;
+            --philips-light-blue: #B8CCE4;
+            --philips-gray: #666666;
+        }
+
+        body {
+            font-family: "Philips Headline", Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: var(--philips-dark-blue);
+        }
+
+        h1 {
+            color: var(--philips-dark-blue);
+            font-weight: 600;
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+
+        .chat-container {
+            border: 1px solid var(--philips-light-blue);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: 600px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background-color: var(--philips-blue);
+            color: white;
+            margin-left: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .bot-message {
+            background-color: #f8f9fa;
+            margin-right: auto;
+            border-left: 4px solid var(--philips-blue);
+        }
+
+        .confidence {
+            font-size: 0.9em;
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .confidence.High {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .confidence.Medium {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .confidence.Low {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .sources {
+            font-size: 0.9em;
+            margin-top: 15px;
+            padding: 12px;
+            background-color: var(--philips-light-blue);
+            border-radius: 6px;
+        }
+
+        .web-sources {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .web-source-item {
+            margin: 10px 0;
+            padding: 12px;
+            border-left: 4px solid var(--philips-blue);
+            background-color: white;
+        }
+
+        .web-source-item a {
+            color: var(--philips-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .web-source-item a:hover {
+            text-decoration: underline;
+        }
+
+        .web-source-item .snippet {
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: var(--philips-gray);
+        }
+
+        .follow-up-container {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .follow-up {
+            margin: 8px 0;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid var(--philips-light-blue);
+            border-radius: 4px;
+            color: var(--philips-blue);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .follow-up:hover {
+            background-color: var(--philips-light-blue);
+            border-color: var(--philips-blue);
+        }
+
+        .warning-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 12px 0;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--philips-light-blue);
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.2s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--philips-blue);
+        }
+
+        button {
+            padding: 12px 24px;
+            background-color: var(--philips-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #005da7;
+        }
+
+        .mic-button {
+            padding: 12px;
+            background-color: var(--philips-blue);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 46px;
+            height: 46px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .mic-button:hover {
+            background-color: #005da7;
+            transform: translateY(-2px);
+        }
+
+        .mic-button.recording {
+            background-color: #dc3545;
+            animation: pulse 1.5s infinite;
+        }
+
+        .recording-status {
+            color: #dc3545;
+            font-size: 0.9em;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recording-status.active {
+            opacity: 1;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Philips FAQ Chatbot</h1>
+    <div class="chat-container" id="chat-container"></div>
+    <div class="input-container">
+        <input type="text" id="user-input" placeholder="Type your question here...">
+        <button onclick="sendMessage()">Send</button>
+        <button class="mic-button" id="mic-button" onclick="toggleRecording()" title="Click to start recording">
+            <i class="fas fa-microphone"></i>
+        </button>
+        <span class="recording-status" id="recording-status">
+            <i class="fas fa-circle"></i>
+            Recording...
+        </span>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+        // Check for microphone support
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            console.log('getUserMedia is not supported');
+            document.getElementById('mic-button').style.display = 'none';
+        }
+
+        function addMessage(message, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            
+            if (isUser) {
+                messageDiv.textContent = message;
+            } else {
+                // Add the main response
+                messageDiv.innerHTML = message.answer || 'No response available';
+
+                // Add confidence level if available and not null
+                if (message.confidence && message.confidence.level) {
+                    const confidenceDiv = document.createElement('div');
+                    confidenceDiv.className = `confidence ${message.confidence.level}`;
+                    confidenceDiv.textContent = `Confidence: ${message.confidence.level} (${message.confidence.score}%)`;
+                    if (message.confidence.reason) {
+                        confidenceDiv.textContent += ` - ${message.confidence.reason}`;
+                    }
+                    messageDiv.appendChild(confidenceDiv);
+                }
+
+                // Add FAQ sources if available
+                if (message.sources && message.sources.length > 0) {
+                    const sourcesDiv = document.createElement('div');
+                    sourcesDiv.className = 'sources';
+                    sourcesDiv.innerHTML = '<strong>FAQ Sources:</strong>';
+                    message.sources.forEach(source => {
+                        const sourceDiv = document.createElement('div');
+                        sourceDiv.style.marginTop = '10px';
+                        sourceDiv.style.paddingLeft = '10px';
+                        sourceDiv.style.borderLeft = '3px solid #007bff';
+                        sourceDiv.innerHTML = `
+                            <div style="font-weight: bold;">${source.question}</div>
+                            <div style="color: #666; font-size: 0.9em; margin-top: 5px;">${source.content}</div>
+                        `;
+                        sourcesDiv.appendChild(sourceDiv);
+                    });
+                    messageDiv.appendChild(sourcesDiv);
+                }
+
+                // Add web sources if available
+                if (message.web_sources && message.web_sources.length > 0) {
+                    const webSourcesDiv = document.createElement('div');
+                    webSourcesDiv.className = 'web-sources';
+                    webSourcesDiv.innerHTML = '<strong>Additional Sources:</strong>';
+                    
+                    message.web_sources.forEach(source => {
+                        const sourceDiv = document.createElement('div');
+                        sourceDiv.className = 'web-source-item';
+                        sourceDiv.innerHTML = `
+                            <div><a href="${source.url}" target="_blank">${source.title}</a></div>
+                            <div class="snippet">${source.snippet}</div>
+                        `;
+                        webSourcesDiv.appendChild(sourceDiv);
+                    });
+                    
+                    messageDiv.appendChild(webSourcesDiv);
+                }
+
+                // Add follow-up questions if available
+                if (message.follow_up_questions && message.follow_up_questions.length > 0) {
+                    const followUpDiv = document.createElement('div');
+                    followUpDiv.className = 'follow-up-container';
+                    followUpDiv.innerHTML = '<strong>Follow-up Questions:</strong><br>';
+                    
+                    message.follow_up_questions.forEach(question => {
+                        const questionDiv = document.createElement('div');
+                        questionDiv.className = 'follow-up';
+                        questionDiv.textContent = question;
+                        questionDiv.onclick = () => askFollowUp(question);
+                        followUpDiv.appendChild(questionDiv);
+                    });
+                    
+                    messageDiv.appendChild(followUpDiv);
+                }
+            }
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Add user message to chat
+            addMessage(message, true);
+            userInput.value = '';
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: message }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                addMessage(data);
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage({
+                    answer: 'Sorry, there was an error processing your request.',
+                    confidence: { level: 'Low', score: 0, reason: error.message }
+                });
+            }
+        }
+
+        function askFollowUp(question) {
+            userInput.value = question;
+            sendMessage();
+        }
+
+        // Handle Enter key
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Add initial bot message
+        addMessage({
+            answer: "Hello! I'm your Philips FAQ assistant. How can I help you today?",
+            confidence: null  // Set to null to prevent confidence display
+        });
+
+        async function toggleRecording() {
+            const micButton = document.getElementById('mic-button');
+            const recordingStatus = document.getElementById('recording-status');
+            const micIcon = micButton.querySelector('i');
+
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        await sendAudioToServer(audioBlob);
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    micButton.classList.add('recording');
+                    recordingStatus.classList.add('active');
+                    micIcon.className = 'fas fa-stop';
+                    micButton.title = 'Click to stop recording';
+                } catch (err) {
+                    console.error('Error accessing microphone:', err);
+                    alert('Could not access microphone. Please check permissions.');
+                }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                micButton.classList.remove('recording');
+                recordingStatus.classList.remove('active');
+                micIcon.className = 'fas fa-microphone';
+                micButton.title = 'Click to start recording';
+                
+                // Stop all audio tracks
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            }
+        }
+
+        async function sendAudioToServer(audioBlob) {
+            try {
+                const formData = new FormData();
+                formData.append('audio', audioBlob);
+
+                const response = await fetch('/transcribe', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                if (data.text) {
+                    userInput.value = data.text;
+                    sendMessage();
+                }
+            } catch (error) {
+                console.error('Error sending audio:', error);
+                alert('Error processing audio. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html> 
